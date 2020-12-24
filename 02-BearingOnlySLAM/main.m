@@ -23,7 +23,7 @@ source "LS_optimization.m"
 initial_poses = compute_initial_odometry(true_poses, transitions);
 
 # initial landmarks: triangulation
-[initial_landmarks, valid_id_to_state_map] = triangulate_landmarks(initial_poses, observations);
+[initial_landmarks, associations] = triangulate_landmarks(initial_poses, observations);
 
 disp(""); # leave a blank line
 
@@ -75,7 +75,8 @@ kernel_threshold = 1;
 [XR_estimate, XL_estimate] = least_squares(XR_initial,
 										   XL_initial,
 										   observations,
-										   valid_id_to_state_map, # this is where i store my associations
+										   associations,
+										   transitions,
 										   num_poses,
 										   num_landmarks,
 										   num_iterations,
@@ -87,8 +88,12 @@ kernel_threshold = 1;
 ##########################################
 # PRINT
 
-disp("\nPlotting the poses (it will take just a moment)...");
+disp("\nPlotting the poses...");
 plot_XR(XR_estimate, XR_initial, XR_true);
+plot_XR_in_one_figure(XR_estimate, XR_initial, XR_true);
 
 disp("\nPlotting the landmarks...");
 plot_XL(XL_estimate, XL_initial, XL_true);
+plot_XL_in_one_figure(XL_estimate, XL_initial, XL_true);
+
+disp("\nDone.")

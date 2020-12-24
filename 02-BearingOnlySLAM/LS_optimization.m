@@ -50,6 +50,7 @@ function [XR_estimate, XL_estimate] = least_squares(XR_initial,
 													XL_initial,
 													observations,
 													associations,
+													transitions,
 													num_poses,
 													num_landmarks,
 													num_iterations,
@@ -116,4 +117,21 @@ function [XR_estimate, XL_estimate] = least_squares(XR_initial,
 											 num_landmarks,
 											 dx);
 	endfor
+
+	# to include the first transition into account:
+	T = v2t_global_to_local(transitions(1).v);
+	T = T * XR_estimate(:,:,1);
+	T = T * inv(XR_estimate(:,:,2));
+	for pose_index=2:num_poses
+		Xr = XR_estimate(:,:,pose_index);
+		Xr = Xr * T;
+		XR_estimate(:,:,pose_index) = Xr;
+	endfor
+	T = inv(T);
+	for landmark_index=1:num_landmarks
+		tmp = [XL_estimate(:,landmark_index); 1];
+		tmp = T * tmp;
+		XL_estimate(:,landmark_index) = tmp(1:2);
+	endfor
+
 endfunction
